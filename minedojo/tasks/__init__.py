@@ -73,9 +73,15 @@ def _meta_task_make(meta_task: str, *args, **kwargs) -> MetaTaskBase | FastReset
             fast_reset_random_teleport_range = kwargs.pop(
                 "fast_reset_random_teleport_range", None
             )
+            fast_reset_random_teleport_range_high = kwargs.pop(
+                "fast_reset_random_teleport_range_high", None
+            )
+            fast_reset_random_teleport_range_low = kwargs.pop(
+                "fast_reset_random_teleport_range_low", None
+            )
             if fast_reset is True:
                 return FastResetWrapper(
-                    MineDojoSim(*args, **kwargs), fast_reset_random_teleport_range
+                    MineDojoSim(*args, **kwargs), fast_reset_random_teleport_range_high,fast_reset_random_teleport_range_low
                 )
     return MetaTaskName2Class[meta_task](*args, **kwargs)
 
@@ -474,16 +480,19 @@ _logger.info(
 def _parse_inventory_dict(inv_dict: dict[str, dict]) -> list[InventoryItem]:
     return [InventoryItem(slot=k, **v) for k, v in inv_dict.items()]
 
-
+import copy
 def _specific_task_make(task_id: str, *args, **kwargs):
     assert task_id in ALL_TASKS_SPECS, f"Invalid task id provided {task_id}"
-    task_specs = ALL_TASKS_SPECS[task_id].copy()
+    task_specs = copy.deepcopy(ALL_TASKS_SPECS[task_id])
 
     # handle list of inventory items
     if "initial_inventory" in task_specs:
-        kwargs["initial_inventory"] = _parse_inventory_dict(
-            task_specs["initial_inventory"]
-        )
+        # allow specify initial inventory in kwargs
+        if not "initial_inventory" in kwargs:
+            kwargs["initial_inventory"] = _parse_inventory_dict(
+                task_specs["initial_inventory"]
+            )
+            print('warning: the default initial_inventory is modified.')
         task_specs.pop("initial_inventory")
 
     # pop prompt from task specs because it is set from programmatic yaml
@@ -491,6 +500,12 @@ def _specific_task_make(task_id: str, *args, **kwargs):
 
     # meta task
     meta_task_cls = task_specs.pop("__cls__")
+    #print('{}\n{}\n{}\n{}'.format(meta_task_cls, args, task_specs, kwargs))
+    for key in kwargs:
+        if key in task_specs:
+            task_specs.pop(key)
+            print('warning: the default programmatic task argument {} is modified'.format(key))
+    #print(task_specs, kwargs)
     task_obj = _meta_task_make(meta_task_cls, *args, **task_specs, **kwargs)
     return task_obj
 

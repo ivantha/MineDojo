@@ -145,6 +145,10 @@ class HarvestMeta(ExtraSpawnMetaTaskBase):
         world_seed: Optional[str] = None,
         # ------ reset mode ------
         fast_reset: bool = True,
+        # (fast_reset_range --> ~_high & ~_low)
+        fast_reset_random_teleport_range: Optional[int] = None,
+        fast_reset_random_teleport_range_high: Optional[int] = None,
+        fast_reset_random_teleport_range_low: Optional[int] = None,
         # ------ obs ------
         image_size: Union[int, Tuple[int, int]],
         use_voxel: bool = False,
@@ -215,6 +219,10 @@ class HarvestMeta(ExtraSpawnMetaTaskBase):
             extra_spawn_range_low=spawn_range_low,
             extra_spawn_range_high=spawn_range_high,
             fast_reset=fast_reset,
+            # (fast_reset_range --> ~_high & ~_low)
+            fast_reset_random_teleport_range=fast_reset_random_teleport_range,
+            fast_reset_random_teleport_range_high=fast_reset_random_teleport_range_high,
+            fast_reset_random_teleport_range_low=fast_reset_random_teleport_range_low,
             success_criteria=success_criteria,
             reward_fns=reward_fns,
             seed=seed,
